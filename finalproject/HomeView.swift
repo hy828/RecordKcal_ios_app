@@ -9,8 +9,12 @@ import SwiftUI
 
 struct HomeView: View { // 首页：展示某一天所增加或消耗的卡路里
     
-    @Binding var foodList: [FoodItem] // 当日的饮食列表
-    @State var totalCalories: Int = 123 // 当日的总卡路里
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(entity: Food.entity(), sortDescriptors: [])
+    var foods: FetchedResults<Food>
+    
+    @State var foodList: [Food] = [] // 当日的饮食列表
+    @State var totalCalories: Int = 0 // 当日的总卡路里
     @Binding var selectedDate: Date // 那一天的日期
     
     var body: some View {
@@ -22,8 +26,12 @@ struct HomeView: View { // 首页：展示某一天所增加或消耗的卡路�
             ShowFoodList // 显示当日饮食
         }
         .onAppear{
-            foodList = FoodItem.data.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
-            totalCalories = foodList.reduce(0) { $0 + $1.kcal }
+            let today = Calendar.current.startOfDay(for: Date()) // 今天的日期
+            foodList =  foods.filter { food in // 筛选这个日期的食物
+                guard let foodDate = food.date else { return false }
+                return Calendar.current.isDate(foodDate, inSameDayAs: today)
+            }
+            totalCalories = foodList.reduce(0) { $0 + Int($1.kcal) } // 计算卡路里的总和
         }
         .onChange(of: selectedDate) { date in
             handleDateSelection(date) // 选择另一个日期后，更新总卡路里和饮食列表
@@ -70,18 +78,17 @@ struct HomeView: View { // 首页：展示某一天所增加或消耗的卡路�
                 Text("No record.")
             } else {
                 ScrollView { // 当日的所有饮食记录
-                    ForEach(foodList) { item in
+                    ForEach(foodList, id: \.self) { food in
                         HStack {
-                            Text(item.foodName)
+                            Text(food.foodName ?? "Unknown")
                                 .bold()
                             Spacer()
-                            Text("\(item.kcal) kcal")
+                            Text("\(food.kcal) kcal")
                         }
                         .padding(.horizontal, 25)
                         .padding(.vertical, 5)
                         .font(.title3)
                     }
-                    
                 }
             }
         }
@@ -90,13 +97,16 @@ struct HomeView: View { // 首页：展示某一天所增加或消耗的卡路�
     
     func handleDateSelection(_ date: Date) { // 处理日期选择变化的逻辑
         print("Selected date: \(date)")
-        foodList = FoodItem.data.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) } // 根据日期重新筛选饮食列表
-        totalCalories = foodList.reduce(0) { $0 + $1.kcal } // 计算总卡路里
+        foodList =  foods.filter { food in
+            guard let foodDate = food.date else { return false }
+            return Calendar.current.isDate(foodDate, inSameDayAs: selectedDate)
+        } // 根据日期重新筛选饮食列表
+        totalCalories = foodList.reduce(0) { $0 + Int($1.kcal) } // 计算总卡路里
     }
 }
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView(foodList: .constant(FoodItem.data), selectedDate: .constant(Calendar.current.date(from: DateComponents(year: 2023, month: 6, day: 18))!))
+        HomeView(selectedDate: .constant(Calendar.current.date(from: DateComponents(year: 2023, month: 6, day: 18))!))
     }
 }

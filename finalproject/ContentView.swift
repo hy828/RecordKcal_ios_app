@@ -13,13 +13,11 @@ struct ContentView: View {
     @State var showAddView = false
     @State private var selection = 1
     @State private var oldSelection = 1
-    @State var foodList: [FoodItem] = FoodItem.data
     @State var date: Date = Date()
-    @State var food: FoodItem = FoodItem(foodName: "Red Bean Bun", kcal: 215, date: Calendar.current.date(from: DateComponents(year: 2023, month: 5, day: 18))!)
 
     var body: some View {
         TabView(selection: $selection) {
-            HomeView(foodList: $foodList, selectedDate: $date) // 首页
+            HomeView(selectedDate: $date) // 首页
                 .tabItem { Image(systemName: "house.fill") }
                 .tag(1)
              Text("") // 添加记录的界面
@@ -38,28 +36,8 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showAddView) { // 添加记录的界面以sheet的形式展开
-            AddView(food: $food, showAddView: $showAddView)
+            AddView(showAddView: $showAddView)
         }
-    }
-}
-
-struct TabBarButton: View {
-    @Binding var showAddView: Bool
-    
-    var body: some View {
-        Button(action: {
-            showAddView = true
-        }) {
-            Image(systemName: "plus.circle.fill")
-                .resizable()
-                .frame(width: 30, height: 30)
-                .foregroundColor(.blue)
-        }
-        .padding(10)
-        .background(Color.white)
-        .clipShape(Circle())
-        .shadow(radius: 3)
-        .padding(.bottom, 20)
     }
 }
 

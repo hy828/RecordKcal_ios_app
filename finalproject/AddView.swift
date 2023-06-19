@@ -9,9 +9,13 @@ import SwiftUI
 
 struct AddView: View { // 添加记录
     
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(entity: Food.entity(), sortDescriptors: [])
+    var foods: FetchedResults<Food>
+    
     @State private var foodName = ""
     @State private var calories = ""
-    @Binding var food: FoodItem
+    @State private var selectedDate = Date()
     @Binding var showAddView: Bool
     
     var body: some View {
@@ -20,7 +24,7 @@ struct AddView: View { // 添加记录
             Text("Food Name:")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .bold()
-            TextField("Enter the food what you ate", text: $foodName)
+            TextField("Enter food name here", text: $foodName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom)
             
@@ -28,9 +32,17 @@ struct AddView: View { // 添加记录
             Text("Calories(kcal):")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .bold()
-            TextField("What is its calories", text: $calories)
+            TextField("Enter calories here", text: $calories)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom)
+            
+            HStack {
+                Text("Date:")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .bold()
+                DatePicker("Date:", selection: $selectedDate, displayedComponents: .date) // 选择日期
+                    .labelsHidden()
+            }
             
             HStack {
                 // 取消按钮
@@ -67,18 +79,36 @@ struct AddView: View { // 添加记录
     }
     
     func addFood() { // 处理表单提交的逻辑
-        print("Food Name: \(foodName)")
-        print("Calories: \(calories)")
+        print("Submit: \(foodName) - \(calories) - \(selectedDate)")
+        let newFood = Food(context: viewContext)
+        newFood.foodName = foodName
+        newFood.kcal = Int16(calories)!
+        newFood.date = selectedDate
+
+        do {
+            try viewContext.save()
+        } catch {
+            print("Error saving record: \(error)")
+        }
+        
+        clear()
         showAddView.toggle()
     }
     
     func cancel() { // 处理按钮取消的逻辑
+        clear()
         showAddView.toggle()
+    }
+    
+    func clear() { // 清空表单数据
+        foodName = ""
+        calories = ""
+        selectedDate = Date()
     }
 }
 
 struct AddView_Previews: PreviewProvider {
     static var previews: some View {
-        AddView(food: .constant(FoodItem(foodName: "aaa", kcal: 100, date: Calendar.current.date(from: DateComponents(year: 2023, month: 6, day: 18))!)), showAddView: .constant(true))
+        AddView(showAddView: .constant(true))
     }
 }
