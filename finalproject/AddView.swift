@@ -17,6 +17,7 @@ struct AddView: View { // 添加记录
     @State private var calories = ""
     @State private var selectedDate = Date()
     @Binding var showAddView: Bool
+    @Binding var addOnDate: Date
     
     var body: some View {
         VStack {
@@ -76,6 +77,9 @@ struct AddView: View { // 添加记录
         }
         .padding(.top, 50)
         .padding()
+        .onAppear {
+            selectedDate = addOnDate
+        }
     }
     
     func addFood() { // 处理表单提交的逻辑
@@ -90,7 +94,7 @@ struct AddView: View { // 添加记录
         } catch {
             print("Error saving record: \(error)")
         }
-        
+        addOnDate = selectedDate
         clear()
         showAddView.toggle()
     }
@@ -109,6 +113,6 @@ struct AddView: View { // 添加记录
 
 struct AddView_Previews: PreviewProvider {
     static var previews: some View {
-        AddView(showAddView: .constant(true))
+        AddView(showAddView: .constant(true), addOnDate: .constant(Date()))
     }
 }

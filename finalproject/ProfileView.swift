@@ -16,6 +16,7 @@ struct ProfileView: View { // 个人资料
     
     @State var name: String = "aaa"
     @State var age: Int = 0
+    @State var gender: GenderSelection = GenderSelection.male
     @State var weight: Float = 0
     @State var height: Float = 0
     @State var bmi: Float = 0
@@ -24,10 +25,16 @@ struct ProfileView: View { // 个人资料
     @State private var isEditMode = false
     @State var isPicker1Visible = false
     @State var isPicker2Visible = false
+    @State var isPicker3Visible = false
     
     enum GoalSelection: String, CaseIterable { // 目标：增重/减重
         case loss = "LOSS WEIGHT"
         case gain = "GAIN WEIGHT"
+    }
+    
+    enum GenderSelection: String, CaseIterable {
+        case male = "MALE"
+        case female = "FEMALE"
     }
     
     var body: some View {
@@ -36,6 +43,7 @@ struct ProfileView: View { // 个人资料
                 Avatar // 头像
                 Name // 名字
                 Age // 年龄
+                Gender
                 Weight // 体重
                 Height // 身高
                 BMI // BMI
@@ -51,6 +59,7 @@ struct ProfileView: View { // 个人资料
                         let newProfile = Profile(context: viewContext)
                         newProfile.name = name
                         newProfile.age = Int16(exactly: age)!
+                        newProfile.gender = gender.rawValue
                         newProfile.weight = weight
                         newProfile.height = height
                         newProfile.bmi = bmi
@@ -77,10 +86,15 @@ struct ProfileView: View { // 个人资料
                     name = unwrappedName
                 }
                 age = Int(profile.age)
+                if profile.gender == "MALE" {
+                    gender = .male
+                } else {
+                    gender = .female
+                }
                 weight = profile.weight
                 height = profile.height
                 goalWeight = profile.goalWeight
-                if profile.goal == "loss" {
+                if profile.goal == "LOSS WEIGHT" {
                     goal = .loss
                 } else {
                     goal = .gain
@@ -132,6 +146,30 @@ struct ProfileView: View { // 个人资料
                 }
             } else {
                 Text("\(age)")
+            }
+        }
+        .padding(10)
+    }
+    
+    var Gender: some View {
+        HStack {
+            Text("Gender").bold()
+            Spacer()
+            if isEditMode {
+                Button(gender.rawValue) {
+                    isPicker3Visible = true
+                }
+                .sheet(isPresented: $isPicker3Visible) {
+                    Picker("Goal", selection: $gender) {
+                        ForEach(Array(GenderSelection.allCases), id: \.self) { i in
+                            Text(i.rawValue)
+                        }
+                    }
+                    .pickerStyle(WheelPickerStyle())
+                    .presentationDetents([.fraction(0.3)])
+                }
+            } else {
+                Text(gender.rawValue)
             }
         }
         .padding(10)
