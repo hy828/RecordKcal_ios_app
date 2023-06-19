@@ -138,7 +138,7 @@ struct HomeView: View { // 首页：展示某一天所增加或消耗的卡路�
         totalCalories = foodList.reduce(0) { $0 + Int($1.kcal) } // 计算总卡路里
     }
     
-    func deleteRecord(at offsets: IndexSet) {
+    func deleteRecord(at offsets: IndexSet) { // 删除一条记录
         for index in offsets {
             let food = foodList[index]
             viewContext.delete(food)
