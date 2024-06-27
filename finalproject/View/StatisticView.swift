@@ -41,7 +41,7 @@ struct StatisticView: View {
                         ForEach(data) { i in
                             LineMark(
                                 x: .value("Week Day", i.date, unit: .day),
-                                y: .value("Step Count", i.calories)
+                                y: .value("Calories Count", i.calories)
                             )
                         }
                     }
